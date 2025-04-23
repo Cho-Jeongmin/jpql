@@ -9,7 +9,8 @@ import jakarta.persistence.ManyToOne;
 @Entity
 public class Member {
 
-  @Id @GeneratedValue
+  @Id
+  @GeneratedValue
   private Long id;
   private String username;
   private int age;
@@ -40,5 +41,14 @@ public class Member {
 
   public void setAge(int age) {
     this.age = age;
+  }
+
+  @Override
+  public String toString() {
+    return "Member{" +
+        "id=" + id +
+        ", username='" + username + '\'' +
+        ", age=" + age +
+        '}';
   }
 }
