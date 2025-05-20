@@ -21,22 +21,34 @@ public class JpaMain {
 
     try {
 
-      // 데이터 100개 삽입
-      for (int i = 0; i < 100; i++) {
-        Member member = new Member();
-        member.setUsername("member" + i);
-        member.setAge(i);
-        em.persist(member);
-      }
+      Team team = new Team();
+      team.setName("teamA");
+      em.persist(team);
 
-      // 페이징 (setFirstResult, setMaxResult)
-      List<Member> result = em.createQuery("select m from Member m order by m.age desc",
-          Member.class).setFirstResult(20).setMaxResults(10).getResultList();
+      Member member = new Member();
+      member.setUsername("member1");
+      member.setAge(10);
+      member.changeTeam(team);
+      em.persist(member);
 
-      System.out.println("result.size() = " + result.size());
-      for (Member member1 : result) {
-        System.out.println("member1 = " + member1);
-      }
+      // INNER JOIN (팀에 속한 멤버만 조회됨)
+      String query1 = "select m from Member m join m.team t where t.name = :teamName";
+      List<Member> result1 = em.createQuery(query1, Member.class).setParameter("teamName", "teamA")
+          .getResultList();
+
+      // LEFT OUTER JOIN (팀에 속하지 않은 멤버도 조회됨)
+      String query2 = "select m from Member m left join m.team t";
+      List<Member> result2 = em.createQuery(query2, Member.class).getResultList();
+
+      // THETA JOIN (멤버와 팀이 곱하기로 다 조회됨 - 카르테시안 곱)
+      String query3 = "select m from Member m, Team t where m.username = t.name";
+      List<Member> result3 = em.createQuery(query3, Member.class).getResultList();
+
+      // 조인 대상 필터링 (회원과 팀을 조인하면서, 팀 이름이 A인 팀만 조인)
+      String query4 = "select m, t from Member m left join m.team t on t.name = 'A'";
+
+      // 연관관계 없는 엔티티 외부 조인
+      String query5 = "select m, t from Member m left join Team t on m.username = t.name";
 
       tx.commit();
     } catch (Exception e) {
